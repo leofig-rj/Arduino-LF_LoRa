@@ -1,0 +1,82 @@
+#######################################
+# Syntax Coloring Map For LF_LoRa
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+LF_LoRa	            KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+hardwareCfg         KEYWORD2
+slaveCfg            KEYWORD2
+btnLedCfg           KEYWORD2
+inic                KEYWORD2
+setExecMsgModeLoop  KEYWORD2
+setFrequency        KEYWORD2
+setSyncWord         KEYWORD2
+myAddr              KEYWORD2
+setMyAddr	        KEYWORD2
+masterAddr          KEYWORD2
+setMasterAddr       KEYWORD2
+opMode              KEYWORD2
+setOpMode           KEYWORD2
+loraEncode	        KEYWORD2
+loraAddHeader	    KEYWORD2
+loraAddHeaderRet    KEYWORD2
+loraDecode	        KEYWORD2
+loraCheckMsg	    KEYWORD2
+loraCheckMsgMaster	KEYWORD2
+lastMsgHeader	    KEYWORD2
+lastSendId	        KEYWORD2
+descCheckMsg	    KEYWORD2
+execMsgModeCfg      KEYWORD2
+loopLora            KEYWORD2
+lastRssi            KEYWORD2
+lastMsg             KEYWORD2
+lastIdRec           KEYWORD2
+sendState           KEYWORD2
+loopBtnLed          KEYWORD2
+isBtnActive         KEYWORD2
+clearBtnActive      KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+LORA_OP_MODE_CFG            LITERAL1
+LORA_OP_MODE_LOOP           LITERAL1
+
+LORA_STEP_NEG_INIC          LITERAL1
+LORA_STEP_NEG_CFG           LITERAL1
+LORA_STEP_NEG_FIM           LITERAL1
+
+#define LORA_RST_PIN_DEF    LITERAL1
+#define LORA_SS_PIN_DEF     LITERAL1
+#define LORA_SCK_PIN_DEF    LITERAL1
+#define LORA_MOSI_PIN_DEF   LITERAL1
+#define LORA_MISO_PIN_DEF   LITERAL1
+#define LORA_DI00_PIN_DEF   LITERAL1
+
+LORA_FREQ_AS                LITERAL1
+LORA_FREQ_EU                LITERAL1
+LORA_FREQ_NA                LITERAL1
+
+LORA_SYNC_WORD_DEF          LITERAL1
+
+LF_LORA_MAX_PACKET_SIZE     LITERAL1
+
+LORA_MSG_CHECK_OK           LITERAL1
+LORA_MSG_CHECK_NOT_MASTER   LITERAL1
+LORA_MSG_CHECK_NOT_ME       LITERAL1
+LORA_MSG_CHECK_ALREADY_REC  LITERAL1
+LORA_MSG_CHECK_ERROR        LITERAL1
+
+LED_CICLE_TIME              LITERAL1
+
+BTN_DEBOUNCE_TIME           LITERAL1
+BTN_CONFIG_TIME             LITERAL1

@@ -45,8 +45,8 @@
 #define LORA_FREQ_EU  868E6  // Europe
 #define LORA_FREQ_NA  915E6  // North America
 
-// "sync word" padrão LoRa2MQTT = 0xF3.  range de 0x00 - 0xFF
-#define LORA_SYNC_WORD_DEF  0xF3
+// "sync word" padrão LoRa2MQTT = 0x11.  range de 0x00 - 0xFF
+#define LORA_SYNC_WORD_DEF  0x11
 
 #define LF_LORA_MAX_PACKET_SIZE  255
 

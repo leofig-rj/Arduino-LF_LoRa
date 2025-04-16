@@ -23,6 +23,8 @@
 
 // ## Variáveis fora da Classe
 
+// Gerais
+//boolean vIsDebugEnabled; // Para funcionar em serverSSDP, não pode ser variável da classe...
 
 // LF_LoRaClass Class Methods
 /* -------------------------------------------------------------------------- */
@@ -90,7 +92,7 @@ void LF_LoRaClass::inic() {
   // Nota: O nome da chave é limitado a 15 caracteres.
   _opMode = pref.getUInt("opMode", _opMode);
   _masterAddr = pref.getUInt("masterAddr", 0);
-  _myAddr = pref.getUInt("meuAddr", 0);
+  _myAddr = pref.getUInt("myAddr", 0);
   // Fecho Preferences
   pref.end();
 

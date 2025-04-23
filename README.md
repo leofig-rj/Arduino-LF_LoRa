@@ -16,7 +16,7 @@ It is limited to ESP32 processors (all versions) because it uses specific resour
 
 The examples can be used for initial experience with the device / LoRa2MQTT pair.
 
-The example "LF_LoRa_USB_Adapter_01" is to flash the USB adapter to be connected to the Home Assistant server and allow connection to devices.
+The example [LF_LoRa_USB_Adapter_01][ex_usb] is to flash the USB adapter to be connected to the Home Assistant server and allow connection to devices.
 
 Each example contains a corresponding LoRa MQTT configuration file. This example .ino / .py file pair serves as a basis for developing new devices.
 
@@ -32,3 +32,4 @@ This libary is [licensed](LICENSE) under the [MIT Licence](https://en.wikipedia.
 [arduino]:https://arduino.cc/
 [lora]:https://www.lora-alliance.org/
 [lora_lib]:https://github.com/sandeepmistry/arduino-LoRa
+[ex_usb]:https://github.com/leofig-rj/Arduino-LF_LoRa/tree/main/examples/LF_LoRa_USB_Adapter_01

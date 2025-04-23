@@ -22,7 +22,7 @@ Each example contains a corresponding LoRa MQTT configuration file. This example
 
 They are:
 
-[LF_LoRa_Model_TEST01.ino][ex_01_ino] / [test01.py][ex_01_py]
+[LF_LoRa_Model_TEST01][ex_01_ino] / [test01][ex_01_py]
 
 [LF_LoRa_Model_TEST02.ino][ex_01_ino] / [test02.py][ex_01_py]
 

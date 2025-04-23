@@ -20,6 +20,14 @@ The example [LF_LoRa_USB_Adapter_01][ex_usb] is to flash the USB adapter to be c
 
 Each example contains a corresponding LoRa MQTT configuration file. This example .ino / .py file pair serves as a basis for developing new devices.
 
+They are:
+
+[LF_LoRa_Model_TEST01.ino][ex_01_ino] / [test01.py][ex_01_py]
+
+[LF_LoRa_Model_TEST02.ino][ex_01_ino] / [test02.py][ex_01_py]
+
+[LF_LoRa_Model_TEST03.ino][ex_01_ino] / [test03.py][ex_01_py]
+
 ## License
 
 This libary is [licensed](LICENSE) under the [MIT Licence](https://en.wikipedia.org/wiki/MIT_License).
@@ -33,3 +41,9 @@ This libary is [licensed](LICENSE) under the [MIT Licence](https://en.wikipedia.
 [lora]:https://www.lora-alliance.org/
 [lora_lib]:https://github.com/sandeepmistry/arduino-LoRa
 [ex_usb]:https://github.com/leofig-rj/Arduino-LF_LoRa/tree/main/examples/LF_LoRa_USB_Adapter_01
+[ex_01_ino]https://github.com/leofig-rj/Arduino-LF_LoRa/tree/main/examples/LF_LoRa_Model_TEST01
+[ex_01_py]https://github.com/leofig-rj/leofig-hass-addons/blob/main/lora2mqtt/rootfs/usr/bin/models/test01.py
+[ex_02_ino]https://github.com/leofig-rj/Arduino-LF_LoRa/tree/main/examples/LF_LoRa_Model_TEST02
+[ex_02_py]https://github.com/leofig-rj/leofig-hass-addons/blob/main/lora2mqtt/rootfs/usr/bin/models/test02.py
+[ex_03_ino]https://github.com/leofig-rj/Arduino-LF_LoRa/tree/main/examples/LF_LoRa_Model_TEST03
+[ex_03_py]https://github.com/leofig-rj/leofig-hass-addons/blob/main/lora2mqtt/rootfs/usr/bin/models/test03.py

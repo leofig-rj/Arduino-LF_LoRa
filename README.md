@@ -30,7 +30,7 @@ They are:
 
 ## License
 
-This libary is [licensed](LICENSE) under the [MIT Licence](https://en.wikipedia.org/wiki/MIT_License).
+This libary is [licensed][license] under the [MIT Licence][mit].
 
 <!-- Markdown link -->
 [project-stage-shield]: https://img.shields.io/badge/project%20stage-development%20beta-red.svg
@@ -47,3 +47,5 @@ This libary is [licensed](LICENSE) under the [MIT Licence](https://en.wikipedia.
 [ex_02_py]:https://github.com/leofig-rj/leofig-hass-addons/blob/main/lora2mqtt/rootfs/usr/bin/models/test02.py
 [ex_03_ino]:https://github.com/leofig-rj/Arduino-LF_LoRa/tree/main/examples/LF_LoRa_Model_TEST03
 [ex_03_py]:https://github.com/leofig-rj/leofig-hass-addons/blob/main/lora2mqtt/rootfs/usr/bin/models/test03.py
+[license]:https://github.com/leofig-rj/leofig-hass-addons/blob/main/LICENSE
+[mit]:https://en.wikipedia.org/wiki/MIT_License

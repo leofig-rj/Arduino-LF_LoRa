@@ -28,6 +28,15 @@ They are:
 
 - [LF_LoRa_Model_TEST03.ino][ex_03_ino] / [test03.py][ex_03_py]
 
+## New Devices
+
+New devices can be developed based on the above examples.
+The .py configuration file for LoRa2MQTT should be placed in the /Config/lora2mqtt/models folder of the Home Assistant server.
+
+### Note
+
+The configuration files for the examples are already included in LoRa2MQTT and the new ones should be placed in /Config/lora2mqtt/models.
+
 ## License
 
 This libary is [licensed][license] under the [MIT Licence][mit].

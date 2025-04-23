@@ -24,9 +24,9 @@ They are:
 
 - [LF_LoRa_Model_TEST01.ino][ex_01_ino] / [test01.py][ex_01_py]
 
-- [LF_LoRa_Model_TEST02.ino][ex_01_ino] / [test02.py][ex_01_py]
+- [LF_LoRa_Model_TEST02.ino][ex_02_ino] / [test02.py][ex_02_py]
 
-- [LF_LoRa_Model_TEST03.ino][ex_01_ino] / [test03.py][ex_01_py]
+- [LF_LoRa_Model_TEST03.ino][ex_03_ino] / [test03.py][ex_03_py]
 
 ## License
 

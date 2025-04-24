@@ -171,7 +171,7 @@ void loop_lora() {
         Serial.println(msg_data);
       } else {
         // Não começa com !, envia a mensagem para LoRa2MQTT com #RSSI no início
-        char msg[16];
+        char msg[LF_LORA_MAX_PACKET_SIZE];
         sprintf(msg, "#%04d%s",LoRa.packetRssi(),msg_data);
         Serial.println(msg);
       }

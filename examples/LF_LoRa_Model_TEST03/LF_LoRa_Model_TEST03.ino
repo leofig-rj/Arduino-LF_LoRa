@@ -148,7 +148,7 @@ void loop_debug() {
     // Imprimo a msg
     Serial.println(sMsg);
     if (LF_LoRa.opMode() == LORA_OP_MODE_LOOP)
-      onExecMsgModeLoop(sMsg.substring(1));
+      onExecMsgModeLoop(sMsg.substring(1), true);
     if (LF_LoRa.opMode() == LORA_OP_MODE_PAIRING)
       if (sMsg.substring(0,1).equals(String("!")))
         LF_LoRa.execMsgModePairing(sMsg.substring(1));
@@ -288,20 +288,20 @@ void theaterChaseRainbow(int wait) {
  ********************************************/
 
 // Aqui é tratada a mensagem recebida pelo LF_LoRa
-void onExecMsgModeLoop(String sMsg) {
+void onExecMsgModeLoop(String sMsg, bool ret) {
  
   if (sMsg.substring(0,3).equals(String("000"))) {
-    sendState(true);
+    sendState(ret);
   } else if (sMsg.substring(0,3).equals(String("101"))) { 
     if (sMsg.length() == 6) {
-      setBrightnessLED(sMsg.substring(3,6).toInt(), true);
+      setBrightnessLED(sMsg.substring(3,6).toInt(), ret);
     } else if (sMsg.length() == 12) {
-        setColor(sMsg.substring(3,6).toInt(), sMsg.substring(6,9).toInt(), sMsg.substring(9,12).toInt(), true);
+        setColor(sMsg.substring(3,6).toInt(), sMsg.substring(6,9).toInt(), sMsg.substring(9,12).toInt(), ret);
     } else {
-      turnOnLED(true);
+      turnOnLED(ret);
     }
   } else if (sMsg.substring(0,3).equals(String("102"))) { 
-    turnOffLED(true);
+    turnOffLED(ret);
   }
   
 }

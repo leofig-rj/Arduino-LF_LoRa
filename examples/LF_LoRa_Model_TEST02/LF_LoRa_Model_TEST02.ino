@@ -290,7 +290,7 @@ void loop_debug() {
     // Imprimo a msg
     Serial.println(sMsg);
     if (LF_LoRa.opMode() == LORA_OP_MODE_LOOP)
-      onExecMsgModeLoop(sMsg.substring(1));
+      onExecMsgModeLoop(sMsg.substring(1), true);
     if (LF_LoRa.opMode() == LORA_OP_MODE_PAIRING)
       if (sMsg.substring(0,1).equals(String("!")))
         LF_LoRa.execMsgModePairing(sMsg.substring(1));
@@ -399,16 +399,16 @@ void refreshDisplay() {
  ********************************************/
  
 // Aqui é tratada a mensagem recebida pelo LF_LoRa
-void onExecMsgModeLoop(String sCmd) {
+void onExecMsgModeLoop(String sCmd, bool ret) {
   
   if (sCmd.substring(0,3).equals(String("000"))) {
-    sendState(true);
+    sendState(ret);
   } else if (sCmd.substring(0,3).equals(String("101"))) { 
-    turnOnLED(true);
+    turnOnLED(ret);
   } else if (sCmd.substring(0,3).equals(String("102"))) { 
-    turnOffLED(true);
+    turnOffLED(ret);
   } else if (sCmd.substring(0,3).equals(String("110"))) { 
-    resetEnergy(true);
+    resetEnergy(ret);
   }
   
 }

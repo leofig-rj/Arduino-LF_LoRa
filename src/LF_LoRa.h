@@ -57,7 +57,7 @@
 #define BTN_LONG_TIME        3000
 
 // Callbacks da Biblioteca
-#define LF_LORA_ON_EXEC_MSG_MODE_LOOP std::function<void(String)> onExecMsgModeLoop
+#define LF_LORA_ON_EXEC_MSG_MODE_LOOP std::function<void(String, bool)> onExecMsgModeLoop
 #define LF_LORA_ON_LED_CHECK std::function<bool()> onLedCheck
 #define LF_LORA_ON_LED_TURN_ON_PAIRING std::function<void()> onLedTurnOnPairing
 #define LF_LORA_ON_LED_TURN_OFF_PAIRING std::function<void()> onLedTurnOffPairing

@@ -580,7 +580,7 @@ bool LF_LoRaClass::loopLora() {
         }
         // Trato o comando (calback)
         if (onExecMsgModeLoop)
-          onExecMsgModeLoop(sMsg);
+          onExecMsgModeLoop(sMsg, true);
 
         // Atualizo dados para atualizar display
         _lastMsg = sMsg;

@@ -208,11 +208,12 @@ void LF_LoRaClass::loraEncode(const char *in, int len, char *out)
 /* -------------------------------------------------------------------------- */
 void LF_LoRaClass::loraAddHeader(const char *in, int len, uint8_t para, char *out) {
   _lastSendId++;
-  loraAddHeaderRet(in, len, para, _lastSendId, out);
+  if (_lastSendId > 127) _lastSendId = 0;
+  loraAddHeaderId(in, len, para, _lastSendId, out);
 } /* loraAddHeader */
 
 /* -------------------------------------------------------------------------- */
-void LF_LoRaClass::loraAddHeaderRet(const char *in, int len, uint8_t para, uint8_t id, char *out) {
+void LF_LoRaClass::loraAddHeaderId(const char *in, int len, uint8_t para, uint8_t id, char *out) {
   char aux[len + 12]; // Buffer aux para inserir cabeçalho
   sprintf(aux, "%02X%02X%02X%02X%04X", _netId, _myAddr, para, id, len + 12);
   // Completo com msg de entrada
@@ -220,7 +221,7 @@ void LF_LoRaClass::loraAddHeaderRet(const char *in, int len, uint8_t para, uint8
     aux[i+12] = in[i];
   }
   loraEncode(aux, len + 12, out);
-} /* loraAddHeader */
+} /* loraAddHeaderId */
 
 /* -------------------------------------------------------------------------- */
 bool LF_LoRaClass::loraDecode(const char *in, int len, char *out)
@@ -540,7 +541,18 @@ void LF_LoRaClass::sendNegotiation(String sRet) {
 /* -------------------------------------------------------------------------- */
 bool LF_LoRaClass::loopLora() {
 
-  // Tentando analisar o pacote
+  bool ret = loraMsgReceiveLoop();
+
+  loraMsgSendLoop();
+
+  return ret;
+
+} /* loopLora */
+
+/* -------------------------------------------------------------------------- */
+bool LF_LoRaClass::loraMsgReceiveLoop() {
+
+  // Tentando analisar pacote recebido
   int packetSize = LoRa.parsePacket();
 
   if (packetSize) {
@@ -573,17 +585,28 @@ bool LF_LoRaClass::loopLora() {
         // está OK, trato a mensagem
         _lastIdRec = _lastRegRec.id;
         String sMsg = String(msg_data);
+
+        // Presevo msg par o usuário
+        _lastMsg = sMsg;
+
         if (_debugEnabeld) {
           Serial.println("Msg ID: " + String(_lastIdRec) + " Msg: " + sMsg);
           Serial.println("Recebendo Msg: " + sMsg);
           Serial.print("RSSI: "); Serial.println(String(_rssi, DEC));
         }
+
+        if (_lastIdRec > 191) {
+          if (_lastIdRec == _internalMsgId) {
+            // É confirmação de recebimento de mensagem MSG_TYPE_CONFIRM
+            _internalMsgStatus = INT_STATUS_EMPTY;
+            _internalLastMsgStatus = INT_STATUS_EMPTY;
+            return true;
+          }
+        }
+
         // Trato o comando (calback)
         if (onExecMsgModeLoop)
-          onExecMsgModeLoop(sMsg, true);
-
-        // Atualizo dados para atualizar display
-        _lastMsg = sMsg;
+          onExecMsgModeLoop(sMsg, MSG_TYPE_RESPONSE);
 
         return true;
 
@@ -615,7 +638,18 @@ bool LF_LoRaClass::loopLora() {
 
   return false;
 
-} /* loopLora */
+} /* loraMsgReceiveLoop */
+
+/* -------------------------------------------------------------------------- */
+void LF_LoRaClass::loraMsgSendLoop() {
+
+  if (fiFoSendMsg()) {
+    return;
+  }
+
+  internalSendMsg();
+
+} /* loraMsgSendLoop */
 
 /* -------------------------------------------------------------------------- */
 int LF_LoRaClass::lastRssi() {
@@ -633,36 +667,14 @@ uint8_t LF_LoRaClass::lastIdRec() {
 } /* lastIdRec */
 
 /* -------------------------------------------------------------------------- */
-void LF_LoRaClass::sendState(String sState, bool ret) {
+void LF_LoRaClass::sendState(String sState, MsgType mt) {
 
   if (_opMode != LORA_OP_MODE_LOOP) return;
 
-  // Enviando estado via LoRa
-  LoRa.beginPacket();
-
-  // Crio buffer para colocar dados LoRa
-  char lora_data[LF_LORA_MAX_PACKET_SIZE];
-
-  // Formato pacote LoRa como resposta (retorno o ID recebido se retorno = true)
-  if (ret) {
-    loraAddHeaderRet(sState.c_str(), sState.length(), _masterAddr, _lastIdRec, lora_data);
+  if (mt == MSG_TYPE_RESPONSE) {
+    fiFoPushMsg(sState, _lastIdRec);
   } else {
-    loraAddHeader(sState.c_str(), sState.length(), _masterAddr, lora_data);
-  }
-
-  // Enviando LoRa
-  LoRa.print(lora_data);
-
-  LoRa.endPacket();
-
-  // entro no modo "receive"
-  LoRa.receive();
-
-  if (_debugEnabeld) {
-    Serial.print("Dado LoRa: "); Serial.println(lora_data);
-    Serial.print("Estado: "); Serial.println(sState);
-    Serial.print("Millis: "); Serial.println(millis());
-    Serial.print(" Tamanho: "); Serial.println(sState.length());
+    internalPushMsg(sState, mt);
   }
 
 } /* sendState */
@@ -812,6 +824,135 @@ int64_t LF_LoRaClass::getDeltaMillis(unsigned long lastTime) {
   return deltaTime;
 
 } /* getDeltaMillis */
+
+bool LF_LoRaClass::fiFoPushMsg(String msg, uint8_t id) {
+  // Verificando se FiFo está cheia
+  // Atualizando cópia do ponteiro da última mensagem
+  uint8_t aux = _fiFoLast + 1;
+  if (aux >= FIFO_LEN)
+    aux = 0;
+  // Se atualização da cópia do ponteiro da última igual ao da primeira está cheia...
+  if (aux == _fiFoFirst) {
+    return false;
+  }
+
+  // Inclui na FiFo a última mensagem
+  _fiFoMsgMsg[_fiFoLast] = msg;
+  _fiFoId[_fiFoLast] = id;
+  // Atualiza ponteiro da última mensagem
+  _fiFoLast = aux;
+  return true;
+} /* fiFoPush */
+
+bool LF_LoRaClass::fiFoSendMsg() {
+  // Se FiFo não vazio...
+  if (_fiFoFirst != _fiFoLast) {
+    sendMsg(_fiFoMsgMsg[_fiFoFirst], _fiFoId[_fiFoFirst]);
+    // Atualizo ponteiro da primeira mensagem
+    _fiFoFirst += 1;
+    if (_fiFoFirst >= FIFO_LEN)
+      _fiFoFirst = 0;
+    return true;
+  }
+  return false;
+} /* fiFoSendMsg */
+
+void LF_LoRaClass::internalPushMsg(String msg, MsgType mt) {
+  if (mt == MSG_TYPE_TELEMETRY) {
+    if ((_internalMsgStatus == INT_STATUS_EMPTY) || (_internalMsgStatus == INT_STATUS_TELEMETRY)) {
+      _internalMsgStatus = INT_STATUS_TELEMETRY;
+      _internalMsg = msg;
+    } else {
+      _internalMsgStatus = INT_STATUS_CONFIRM;
+      _internalMsg = msg;
+    }
+  }
+  if (mt == MSG_TYPE_CONFIRM) {
+    _internalMsgStatus = INT_STATUS_CONFIRM;
+    _internalMsg = msg;
+  }
+} /* internalSetMsg */
+
+bool LF_LoRaClass::internalSendMsg() {
+  if (_internalMsgStatus == INT_STATUS_EMPTY) {
+    return false;
+  }
+  if (_internalLastMsgStatus != INT_STATUS_EMPTY) {
+    if (getDeltaMillis(_lastMsgTime) < _msgSendInterval) {
+      return false;
+    }
+  }
+  _internalLastMsgStatus = _internalMsgStatus;
+  _internalMsgId = getNextIdTeleToSend();
+  if (_internalMsgStatus == INT_STATUS_CONFIRM) {
+    _internalMsgId = getNextIdConfToSend();
+  }
+  sendMsg(_internalMsg, _internalMsgId);
+  if (_internalMsgStatus == INT_STATUS_TELEMETRY) {
+    _internalMsgStatus = INT_STATUS_EMPTY;
+  }
+  return true;
+} /* internalSendMsg */
+
+/* -------------------------------------------------------------------------- */
+uint8_t LF_LoRaClass::getNextIdTeleToSend() {
+  _lastSendIdTele++;
+  if (_lastSendIdTele > 191) _lastSendIdTele = 128;
+  return _lastSendIdTele;
+} /* getNextIdTeleToSend */
+
+/* -------------------------------------------------------------------------- */
+uint8_t LF_LoRaClass::getNextIdConfToSend() {
+  _lastSendIdConf++;
+  if (_lastSendIdConf < 192) _lastSendIdConf = 192;
+  return _lastSendIdConf;
+} /* getNextIdConfToSend */
+
+/* -------------------------------------------------------------------------- */
+void LF_LoRaClass::setSendInterval(unsigned long interval) {
+  _msgSendIntervalBase = interval;
+} /* setSendInterval */
+
+/* -------------------------------------------------------------------------- */
+void LF_LoRaClass::sendMsg(String msg, uint8_t id) {
+
+  if (_opMode != LORA_OP_MODE_LOOP) return;
+
+  if (_debugEnabeld) {
+    Serial.print("sendMsg: ");Serial.print(msg);Serial.println(id);
+  }
+
+  // Restando o tempo de msg
+  _lastMsgTime = millis();
+
+  // Definindo o próximo intervalo
+  _msgSendInterval = random(_msgSendIntervalBase - 500, _msgSendIntervalBase + 500);
+
+  // Enviando estado via LoRa
+  LoRa.beginPacket();
+
+  // Crio buffer para colocar dados LoRa
+  char lora_data[LF_LORA_MAX_PACKET_SIZE];
+
+  // Formato pacote LoRa como resposta informando o ID
+  loraAddHeaderId(msg.c_str(), msg.length(), _masterAddr, id, lora_data);
+
+  // Enviando LoRa
+  LoRa.print(lora_data);
+
+  LoRa.endPacket();
+
+  // entro no modo "receive"
+  LoRa.receive();
+
+  if (_debugEnabeld) {
+    Serial.print("Dado LoRa: "); Serial.println(lora_data);
+    Serial.print("Msg: "); Serial.println(msg);
+    Serial.print("Millis: "); Serial.println(millis());
+    Serial.print("Tamanho: "); Serial.println(msg.length());
+  }
+
+} /* sendMsg */
 
 /* Defino a variável Globla LF_LoRa aqui, para não ter que declarar no .ino */
 LF_LoRaClass LF_LoRa;

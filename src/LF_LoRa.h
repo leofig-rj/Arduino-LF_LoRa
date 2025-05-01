@@ -56,17 +56,32 @@
 #define BTN_OFF_TIME          400
 #define BTN_LONG_TIME        3000
 
-// Callbacks da Biblioteca
-#define LF_LORA_ON_EXEC_MSG_MODE_LOOP std::function<void(String, bool)> onExecMsgModeLoop
-#define LF_LORA_ON_LED_CHECK std::function<bool()> onLedCheck
-#define LF_LORA_ON_LED_TURN_ON_PAIRING std::function<void()> onLedTurnOnPairing
-#define LF_LORA_ON_LED_TURN_OFF_PAIRING std::function<void()> onLedTurnOffPairing
+#define FIFO_LEN                   10
+#define LORA_MSG_SEND_INTERVAL   4000
+
+enum MsgType {
+  MSG_TYPE_RESPONSE = 0,
+  MSG_TYPE_TELEMETRY = 1,
+  MSG_TYPE_CONFIRM = 2,
+};
+
+enum InternalStatus {
+  INT_STATUS_EMPTY = 0,
+  INT_STATUS_TELEMETRY = 1,
+  INT_STATUS_CONFIRM = 2,
+};
 
 struct RegRec {
   uint8_t de;
   uint8_t para;
   uint8_t id;
 };
+
+// Callbacks da Biblioteca
+#define LF_LORA_ON_EXEC_MSG_MODE_LOOP std::function<void(String, MsgType)> onExecMsgModeLoop
+#define LF_LORA_ON_LED_CHECK std::function<bool()> onLedCheck
+#define LF_LORA_ON_LED_TURN_ON_PAIRING std::function<void()> onLedTurnOnPairing
+#define LF_LORA_ON_LED_TURN_OFF_PAIRING std::function<void()> onLedTurnOffPairing
 
 class LF_LoRaClass {
 
@@ -96,7 +111,7 @@ public:
   void setOpMode(uint8_t modo);
   void loraEncode(const char *in, int len, char *out);
   void loraAddHeader(const char *in, int len, uint8_t para, char *out);
-  void loraAddHeaderRet(const char *in, int len, uint8_t para, uint8_t id, char *out);
+  void loraAddHeaderId(const char *in, int len, uint8_t para, uint8_t id, char *out);
   bool loraDecode(const char *in, int len, char *out);
   uint8_t loraCheckMsg(const char *in, int len, char *out);
   uint8_t loraCheckMsgMaster(const char *in, int len, char *out);
@@ -107,7 +122,7 @@ public:
   int lastRssi();
   String lastMsg();
   uint8_t lastIdRec();
-  void sendState(String sState, bool ret);
+  void sendState(String sState, MsgType mt);
   void loopBtnLed();
   bool isBtnClickActive();
   bool isBtnDblClickActive();
@@ -131,9 +146,19 @@ private:
   void clearRegRecs();
   int findRegRec(uint8_t de, uint8_t para);
   void sendNegotiation(String sRet);
+  bool loraMsgReceiveLoop();
+  void loraMsgSendLoop();
   void btnCheck();
+  bool fiFoPushMsg(String msg, uint8_t id);
+  bool fiFoSendMsg();
+  void internalPushMsg(String msg, MsgType mt);
+  bool internalSendMsg();
+  uint8_t getNextIdTeleToSend();
+  uint8_t getNextIdConfToSend();
+  void setSendInterval(unsigned long interval);
+  void sendMsg(String msg, uint8_t id);
 
-  // ## Variables
+  // ## Variáveis
   Preferences pref;
 
   bool _debugEnabeld = false;
@@ -145,7 +170,9 @@ private:
   uint8_t _netId = 0;
   uint8_t _myAddr = 0;
   uint8_t _masterAddr = 0;
-  uint8_t _lastSendId = 255;
+  uint8_t _lastSendId = 0;
+  uint8_t _lastSendIdTele = 128;
+  uint8_t _lastSendIdConf = 192;
   RegRec *_regRecs = nullptr;
   int _regRecsLen = 0;
   RegRec _lastRegRec = {0, 0, 0};
@@ -185,6 +212,20 @@ private:
   bool _btnCfgActive = false;
   uint8_t _btnCounter = 0;
   bool _lastModoOp = LORA_OP_MODE_LOOP;
+
+  uint8_t _fiFoFirst = 0;
+  uint8_t _fiFoLast = 0;
+  String _fiFoMsgMsg[FIFO_LEN];
+  uint8_t _fiFoId[FIFO_LEN];
+
+  uint8_t _internalMsgStatus = INT_STATUS_EMPTY;
+  uint8_t _internalLastMsgStatus = INT_STATUS_EMPTY;
+  uint8_t _internalMsgId;
+  String _internalMsg;
+
+  unsigned long _lastMsgTime = 0;
+  unsigned long _msgSendIntervalBase = LORA_MSG_SEND_INTERVAL;
+  unsigned long _msgSendInterval = LORA_MSG_SEND_INTERVAL;
 
 };
 

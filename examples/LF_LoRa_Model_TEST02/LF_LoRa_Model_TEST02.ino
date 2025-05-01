@@ -90,6 +90,7 @@
 //########## Para PZEM-004T
 #define PIN_TX1  32
 #define PIN_RX1  33
+#define PZEM_REFRESH_PERIOD  10000  // Tempo para refresh dos dados
 
 HardwareSerial HdwSerial1(1); // Para definição dos pinos da UART0 em PZEM
 
@@ -132,7 +133,6 @@ float fFrequencia = -100.0;
 // Mensagens
 uint8_t lastModoOp = LORA_OP_MODE_LOOP;
 String sState;
-bool secondMsg = false;
 String sTensao;
 String sPotencia;
 String sCorrente;
@@ -209,7 +209,7 @@ void loop_pzem() {
          
   if (inibeLoopPzem) return;
 
-  if ( LF_LoRa.getDeltaMillis(pzemRefreshTime) > 5000) {
+  if ( LF_LoRa.getDeltaMillis(pzemRefreshTime) > PZEM_REFRESH_PERIOD) {
     pzemRefreshTime = millis();
 
 #ifdef DEBUG_LF
@@ -258,11 +258,15 @@ void loop_pzem() {
       Serial.println();
 #endif
 
-      // Evito overrange de energy...
-      if (energy >= 99999.0) resetEnergy(false);
+      // Evito overrange de energy, ressetando. Envio com mensagem tipo confirmação
+      if (energy >= 99999.0) resetEnergy(MSG_TYPE_CONFIRM);
 
-      if (LF_LoRa.opMode() == LORA_OP_MODE_LOOP)
+      // Atualizo display e envio estado para LoRa2MQTT
+      // O tipo de mensagem é telemetria, que não pede confirmação
+      if (LF_LoRa.opMode() == LORA_OP_MODE_LOOP) {
         refreshDisplay();
+        sendState(MSG_TYPE_TELEMETRY);
+      }
 
     }
 
@@ -290,7 +294,7 @@ void loop_debug() {
     // Imprimo a msg
     Serial.println(sMsg);
     if (LF_LoRa.opMode() == LORA_OP_MODE_LOOP)
-      onExecMsgModeLoop(sMsg.substring(1), true);
+      onExecMsgModeLoop(sMsg.substring(1), MSG_TYPE_TELEMETRY);
     if (LF_LoRa.opMode() == LORA_OP_MODE_PAIRING)
       if (sMsg.substring(0,1).equals(String("!")))
         LF_LoRa.execMsgModePairing(sMsg.substring(1));
@@ -302,20 +306,12 @@ void loop_btn() {
   LF_LoRa.loopBtnLed();
   // Verificando se foi dado um click
   if (LF_LoRa.isBtnClickActive()) {
-    secondMsg = true;
     // Comuta o LED
     if (digitalRead(LED_PIN)) {
-      turnOffLED(false);
+      turnOffLED(MSG_TYPE_CONFIRM);
     } else {
-      turnOnLED(false);
+      turnOnLED(MSG_TYPE_CONFIRM);
     }
-  }
-  // Verificando se envia a segunda Mensagem
-  if (secondMsg) {
-    // Envio novamente o estado para tentar garantir
-    delay(200);
-    secondMsg = false;
-    sendState(false);
   }
 }
 
@@ -399,16 +395,16 @@ void refreshDisplay() {
  ********************************************/
  
 // Aqui é tratada a mensagem recebida pelo LF_LoRa
-void onExecMsgModeLoop(String sCmd, bool ret) {
+void onExecMsgModeLoop(String sCmd, MsgType mt) {
   
   if (sCmd.substring(0,3).equals(String("000"))) {
-    sendState(ret);
+    sendState(mt);
   } else if (sCmd.substring(0,3).equals(String("101"))) { 
-    turnOnLED(ret);
+    turnOnLED(mt);
   } else if (sCmd.substring(0,3).equals(String("102"))) { 
-    turnOffLED(ret);
+    turnOffLED(mt);
   } else if (sCmd.substring(0,3).equals(String("110"))) { 
-    resetEnergy(ret);
+    resetEnergy(mt);
   }
   
 }
@@ -432,21 +428,21 @@ void onLedTurnOffPairing() {
  * Funções para Comandos
  ********************************************/
  
-void turnOnLED(bool retorno) {
+void turnOnLED(MsgType mt) {
   // Liga o LED
   digitalWrite(LED_PIN, HIGH);
   // Envia Estado
-  sendState(retorno);
+  sendState(mt);
 }
 
-void turnOffLED(bool retorno) {
+void turnOffLED(MsgType mt) {
   // Desliga o LED      
   digitalWrite(LED_PIN, LOW);
   // Envia Estado
-  sendState(retorno);
+  sendState(mt);
 }
 
-void resetEnergy(bool retorno) {
+void resetEnergy(MsgType mt) {
   
   inibeLoopPzem = true;
   delay(500);
@@ -455,7 +451,7 @@ void resetEnergy(bool retorno) {
   delay(500);
   inibeLoopPzem = false;
   // Envia Estado
-  sendState(retorno);
+  sendState(mt);
 }
 
 void leTensao() {
@@ -507,7 +503,7 @@ void buildState() {
   sState = sState + String('#') + sInterruptor;
 }
 
-void sendState(bool retorno) {
+void sendState(MsgType mt) {
 
   // Só processo se leitura do PZEM já estabilizou...
   if (fTensao < 0) return;
@@ -524,7 +520,7 @@ void sendState(bool retorno) {
   leInterruptor();
   buildState();
 
-  LF_LoRa.sendState(sState, retorno);
+  LF_LoRa.sendState(sState, mt);
 
 }
 

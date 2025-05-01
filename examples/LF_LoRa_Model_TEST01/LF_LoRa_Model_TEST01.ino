@@ -99,7 +99,6 @@ String lastRSSI;
 String lastMsg;
 
 // Mensagens
-bool secondMsg = false;
 bool ledState = false;
 uint8_t ledBrightness = 255;
 
@@ -190,7 +189,7 @@ void loop_debug() {
     // Imprimo a msg
     Serial.println(sMsg);
     if (LF_LoRa.opMode() == LORA_OP_MODE_LOOP)
-      onExecMsgModeLoop(sMsg.substring(1), true);
+      onExecMsgModeLoop(sMsg.substring(1), MSG_TYPE_TELEMETRY);
     if (LF_LoRa.opMode() == LORA_OP_MODE_PAIRING)
       if (sMsg.substring(0,1).equals(String("!")))
         LF_LoRa.execMsgModePairing(sMsg.substring(1));
@@ -202,30 +201,20 @@ void loop_btn() {
   LF_LoRa.loopBtnLed();
   // Verificando se foi dado um click
   if (LF_LoRa.isBtnClickActive()) {
-    secondMsg = true;
     // Comuta o LED
     if (ledState==true) {
-      turnOffLED(false);
+      turnOffLED(MSG_TYPE_CONFIRM);
     } else {
-      turnOnLED(false);
+      turnOnLED(MSG_TYPE_CONFIRM);
     }
   }
   // Verificando se foi dado um duplo click
   if (LF_LoRa.isBtnDblClickActive()) {
-    secondMsg = true;
-    setBrightnessLED(ledBrightness+30, false);
+    setBrightnessLED(ledBrightness+30, MSG_TYPE_CONFIRM);
   }
   // Verificando se foi feito um pressionamento longo (1 a 3 segundos)
   if (LF_LoRa.isBtnLongActive()) {
-    secondMsg = true;
-    setBrightnessLED(255, false);
-  }
-  // Verificando se envia a segunda Mensagem
-  if (secondMsg) {
-    // Envio novamente o estado para tentar garantir
-    delay(200);
-    secondMsg = false;
-    sendState(false);
+    setBrightnessLED(255, MSG_TYPE_CONFIRM);
   }
 }
 
@@ -309,18 +298,18 @@ void refreshDisplay() {
  ********************************************/
 
 // Aqui é tratada a mensagem recebida pelo LF_LoRa
-void onExecMsgModeLoop(String sMsg, bool ret) {
+void onExecMsgModeLoop(String sMsg, MsgType mt) {
 
   if (sMsg.substring(0,3).equals(String("000"))) {
-    sendState(ret);
+    sendState(mt);
   } else if (sMsg.substring(0,3).equals(String("101"))) { 
     if (sMsg.length() == 6) {
-      setBrightnessLED(sMsg.substring(3,6).toInt(), ret);
+      setBrightnessLED(sMsg.substring(3,6).toInt(), mt);
     } else {
-      turnOnLED(ret);
+      turnOnLED(mt);
     }
   } else if (sMsg.substring(0,3).equals(String("102"))) { 
-    turnOffLED(ret);
+    turnOffLED(mt);
   }
   
 }
@@ -346,31 +335,31 @@ void onLedTurnOffPairing() {
  * Funções para Comandos
  ********************************************/
  
-void turnOnLED(bool ret) {
+void turnOnLED(MsgType mt) {
    // Liga o LED      
   ledState = true;
   if (ledBrightness==0) ledBrightness = LED_MIN_BRIGHTNESS;
   ledcWrite(LED_PIN, ledBrightness);
   // Envia Estado
-  sendState(ret);
+  sendState(mt);
 }
 
-void turnOffLED(bool ret) {
+void turnOffLED(MsgType mt) {
    // Desliga o LED      
   ledState = false;
   ledcWrite(LED_PIN, 0);
   // Envia Estado
-  sendState(ret);
+  sendState(mt);
 }
 
-void setBrightnessLED(uint8_t brightness, bool ret) {
+void setBrightnessLED(uint8_t brightness, MsgType mt) {
   // Define o brilho do LED      
   ledBrightness = brightness;
   if (ledBrightness < LED_MIN_BRIGHTNESS) {
     ledBrightness = 0;
-    turnOffLED(ret);
+    turnOffLED(mt);
   } else {
-    turnOnLED(ret);
+    turnOnLED(mt);
   }
 }
 
@@ -380,8 +369,8 @@ String buildState() {
   return String('#') + String(ledState) + String('#') + String(brightness) + String('#') + String(ledState);
 }
 
-void sendState(bool retorno) {
+void sendState(MsgType mt) {
 
-  LF_LoRa.sendState(buildState(), retorno);
+  LF_LoRa.sendState(buildState(), mt);
 
 }

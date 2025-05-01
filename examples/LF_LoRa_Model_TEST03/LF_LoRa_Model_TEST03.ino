@@ -87,7 +87,6 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 //########## Para Processamento
 // Mensagens
-bool secondMsg = false;
 bool ledState = false;
 uint8_t ledBrightness = 255;
 uint8_t ledRed = 255;
@@ -148,7 +147,7 @@ void loop_debug() {
     // Imprimo a msg
     Serial.println(sMsg);
     if (LF_LoRa.opMode() == LORA_OP_MODE_LOOP)
-      onExecMsgModeLoop(sMsg.substring(1), true);
+      onExecMsgModeLoop(sMsg.substring(1), MSG_TYPE_TELEMETRY);
     if (LF_LoRa.opMode() == LORA_OP_MODE_PAIRING)
       if (sMsg.substring(0,1).equals(String("!")))
         LF_LoRa.execMsgModePairing(sMsg.substring(1));
@@ -161,30 +160,20 @@ void loop_botao() {
   LF_LoRa.loopBtnLed();
   // Verificando se foi dado um click
   if (LF_LoRa.isBtnClickActive()) {
-    secondMsg = true;
     // Comuta o LED
     if (ledState==true) {
-      turnOffLED(false);
+      turnOffLED(MSG_TYPE_CONFIRM);
     } else {
-      turnOnLED(false);
+      turnOnLED(MSG_TYPE_CONFIRM);
     }
   }
   // Verificando se foi dado um duplo click
   if (LF_LoRa.isBtnDblClickActive()) {
-    secondMsg = true;
-    setBrightnessLED(ledBrightness+30, false);
+    setBrightnessLED(ledBrightness+30, MSG_TYPE_CONFIRM);
   }
   // Verificando se foi feito um pressionamento longo (1 a 3 segundos)
   if (LF_LoRa.isBtnLongActive()) {
-    secondMsg = true;
-    setBrightnessLED(255, false);
-  }
-  // Verificando se envia a segunda Mensagem
-  if (secondMsg) {
-    // Envio novamente o estado para tentar garantir
-    delay(200);
-    secondMsg = false;
-    sendState(false);
+    setBrightnessLED(255, MSG_TYPE_CONFIRM);
   }
 
 }
@@ -220,88 +209,25 @@ void colorWipe(uint32_t color, int wait) {
   }
 }
 
-// Theater-marquee-style chasing lights. Pass in a color (32-bit value,
-// a la strip.Color(r,g,b) as mentioned above), and a delay time (in ms)
-// between frames.
-void theaterChase(uint32_t color, int wait) {
-  for(int a=0; a<10; a++) {  // Repeat 10 times...
-    for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
-      strip.clear();         //   Set all pixels in RAM to 0 (off)
-      // 'c' counts up from 'b' to end of strip in steps of 3...
-      for(int c=b; c<strip.numPixels(); c += 3) {
-        strip.setPixelColor(c, color); // Set pixel 'c' to value 'color'
-      }
-      strip.show(); // Update strip with new contents
-      delay(wait);  // Pause for a moment
-    }
-  }
-}
-
-// Rainbow cycle along whole strip. Pass delay time (in ms) between frames.
-void rainbow(int wait) {
-  // Hue of first pixel runs 3 complete loops through the color wheel.
-  // Color wheel has a range of 65536 but it's OK if we roll over, so
-  // just count from 0 to 3*65536. Adding 256 to firstPixelHue each time
-  // means we'll make 3*65536/256 = 768 passes through this outer loop:
-  for(long firstPixelHue = 0; firstPixelHue < 3*65536; firstPixelHue += 256) {
-    for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
-      // Offset pixel hue by an amount to make one full revolution of the
-      // color wheel (range of 65536) along the length of the strip
-      // (strip.numPixels() steps):
-      int pixelHue = firstPixelHue + (i * 65536L / strip.numPixels());
-      // strip.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
-      // optionally add saturation and value (brightness) (each 0 to 255).
-      // Here we're using just the single-argument hue variant. The result
-      // is passed through strip.gamma32() to provide 'truer' colors
-      // before assigning to each pixel:
-      strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(pixelHue)));
-    }
-    strip.show(); // Update strip with new contents
-    delay(wait);  // Pause for a moment
-  }
-}
-
-// Rainbow-enhanced theater marquee. Pass delay time (in ms) between frames.
-void theaterChaseRainbow(int wait) {
-  int firstPixelHue = 0;     // First pixel starts at red (hue 0)
-  for(int a=0; a<30; a++) {  // Repeat 30 times...
-    for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
-      strip.clear();         //   Set all pixels in RAM to 0 (off)
-      // 'c' counts up from 'b' to end of strip in increments of 3...
-      for(int c=b; c<strip.numPixels(); c += 3) {
-        // hue of pixel 'c' is offset by an amount to make one full
-        // revolution of the color wheel (range 65536) along the length
-        // of the strip (strip.numPixels() steps):
-        int      hue   = firstPixelHue + c * 65536L / strip.numPixels();
-        uint32_t color = strip.gamma32(strip.ColorHSV(hue)); // hue -> RGB
-        strip.setPixelColor(c, color); // Set pixel 'c' to value 'color'
-      }
-      strip.show();                // Update strip with new contents
-      delay(wait);                 // Pause for a moment
-      firstPixelHue += 65536 / 90; // One cycle of color wheel over 90 frames
-    }
-  }
-}
-
 /********************************************
  * Funções de Callback
  ********************************************/
 
 // Aqui é tratada a mensagem recebida pelo LF_LoRa
-void onExecMsgModeLoop(String sMsg, bool ret) {
+void onExecMsgModeLoop(String sMsg, MsgType mt) {
  
   if (sMsg.substring(0,3).equals(String("000"))) {
-    sendState(ret);
+    sendState(mt);
   } else if (sMsg.substring(0,3).equals(String("101"))) { 
     if (sMsg.length() == 6) {
-      setBrightnessLED(sMsg.substring(3,6).toInt(), ret);
+      setBrightnessLED(sMsg.substring(3,6).toInt(), mt);
     } else if (sMsg.length() == 12) {
-        setColor(sMsg.substring(3,6).toInt(), sMsg.substring(6,9).toInt(), sMsg.substring(9,12).toInt(), ret);
+        setColor(sMsg.substring(3,6).toInt(), sMsg.substring(6,9).toInt(), sMsg.substring(9,12).toInt(), mt);
     } else {
-      turnOnLED(ret);
+      turnOnLED(mt);
     }
   } else if (sMsg.substring(0,3).equals(String("102"))) { 
-    turnOffLED(ret);
+    turnOffLED(mt);
   }
   
 }
@@ -327,7 +253,7 @@ void onLedTurnOffPairing() {
  * Funções para Comandos
  ********************************************/
 
-void turnOnLED(bool ret) {
+void turnOnLED(MsgType mt) {
    // Liga o LED      
   ledState = true;
   if (ledBrightness==0) ledBrightness = LED_MIN_BRIGHTNESS;
@@ -336,33 +262,33 @@ void turnOnLED(bool ret) {
   uint8_t b = ledBlue * ledBrightness / 256;
   colorWipe(strip.Color(r,g,b), 10);
   // Envia Estado
-  sendState(ret);
+  sendState(mt);
 }
 
-void turnOffLED(bool ret) {
+void turnOffLED(MsgType mt) {
    // Desliga o LED      
   ledState = false;
   colorWipe(strip.Color(0,0,0), 10);
   // Envia Estado
-  sendState(ret);
+  sendState(mt);
 }
 
-void setBrightnessLED(uint8_t brightness, bool ret) {
+void setBrightnessLED(uint8_t brightness, MsgType mt) {
   // Define o brilho do LED      
   ledBrightness = brightness;
   if (ledBrightness < LED_MIN_BRIGHTNESS) {
     ledBrightness = 0;
-    turnOffLED(ret);
+    turnOffLED(mt);
   } else {
-    turnOnLED(ret);
+    turnOnLED(mt);
   }
 }
 
-void setColor(uint8_t r, uint8_t g, uint8_t b, bool ret) {
+void setColor(uint8_t r, uint8_t g, uint8_t b, MsgType mt) {
   ledRed = r;
   ledGreen = g;
   ledBlue = b;
-  turnOnLED(ret);
+  turnOnLED(mt);
 }
 
 
@@ -378,6 +304,6 @@ String buildState() {
   return String('#') + String(ledState) + String('#') + String(br) + String('#') + String(r) + String('#') + String(g) + String('#') + String(b) + String('#') + String(ledState);
 }
 
-void sendState(bool ret) {
-  LF_LoRa.sendState(buildState(), ret);
+void sendState(MsgType mt) {
+  LF_LoRa.sendState(buildState(), mt);
 }

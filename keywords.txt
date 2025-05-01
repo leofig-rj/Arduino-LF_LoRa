@@ -6,79 +6,83 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-LF_LoRa	            KEYWORD1
+LF_LoRaClass	KEYWORD1
+LF_LoRa	KEYWORD1
+MsgType	KEYWORD1
+InternalStatus	KEYWORD1
+RegRec	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 
-hardwareCfg         KEYWORD2
-slaveCfg            KEYWORD2
-btnCfg              KEYWORD2
-inic                KEYWORD2
-setDebugEnable      KEYWORD2
-setExecMsgModeLoop  KEYWORD2
-setOnLedCheck       KEYWORD2
-setOnLedTurnOnPairing   KEYWORD2
-setOnLedTurnOffPairing  KEYWORD2
-setFrequency        KEYWORD2
-setSyncWord         KEYWORD2
-myAddr              KEYWORD2
-setMyAddr	        KEYWORD2
-masterAddr          KEYWORD2
-setMasterAddr       KEYWORD2
-opMode              KEYWORD2
-setOpMode           KEYWORD2
-loraEncode	        KEYWORD2
-loraAddHeader	    KEYWORD2
-loraAddHeaderRet    KEYWORD2
-loraDecode	        KEYWORD2
-loraCheckMsg	    KEYWORD2
+hardwareCfg	KEYWORD2
+slaveCfg	KEYWORD2
+btnCfg	KEYWORD2
+inic	KEYWORD2
+setDebugEnable	KEYWORD2
+setExecMsgModeLoop	KEYWORD2
+setOnLedCheck	KEYWORD2
+setOnLedTurnOnPairing	KEYWORD2
+setOnLedTurnOffPairing	KEYWORD2
+setFrequency	KEYWORD2
+setSyncWord	KEYWORD2
+myAddr	KEYWORD2
+setMyAddr	KEYWORD2
+masterAddr	KEYWORD2
+setMasterAddr	KEYWORD2
+opMode	KEYWORD2
+setOpMode	KEYWORD2
+loraEncode	KEYWORD2
+loraAddHeader	KEYWORD2
+loraAddHeaderRet	KEYWORD2
+loraDecode	KEYWORD2
+loraCheckMsg	KEYWORD2
 loraCheckMsgMaster	KEYWORD2
-lastMsgHeader	    KEYWORD2
-lastSendId	        KEYWORD2
-execMsgModePairing  KEYWORD2
-loopLora            KEYWORD2
-lastRssi            KEYWORD2
-lastMsg             KEYWORD2
-lastIdRec           KEYWORD2
-sendState           KEYWORD2
-loopBtnLed          KEYWORD2
-isBtnClickActive    KEYWORD2
-isBtnDblClickActive KEYWORD2
-isBtnLongActive     KEYWORD2
-isBtnOn             KEYWORD2
-getDeltaMillis      KEYWORD2
+lastMsgHeader	KEYWORD2
+lastSendId	KEYWORD2
+execMsgModePairing	KEYWORD2
+loopLora	KEYWORD2
+lastRssi	KEYWORD2
+lastMsg	KEYWORD2
+lastIdRec	KEYWORD2
+sendState	KEYWORD2
+loopBtnLed	KEYWORD2
+isBtnClickActive	KEYWORD2
+isBtnDblClickActive	KEYWORD2
+isBtnLongActive	KEYWORD2
+isBtnOn	KEYWORD2
+getDeltaMillis	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
 #######################################
 
-LORA_OP_MODE_PAIRING        LITERAL1
-LORA_OP_MODE_LOOP           LITERAL1
+LORA_OP_MODE_PAIRING	LITERAL1
+LORA_OP_MODE_LOOP	LITERAL1
 
-LORA_STEP_NEG_INIC          LITERAL1
-LORA_STEP_NEG_CFG           LITERAL1
-LORA_STEP_NEG_FIM           LITERAL1
+LORA_STEP_NEG_INIC	LITERAL1
+LORA_STEP_NEG_CFG	LITERAL1
+LORA_STEP_NEG_FIM	LITERAL1
 
-LORA_FREQ_AS                LITERAL1
-LORA_FREQ_EU                LITERAL1
-LORA_FREQ_NA                LITERAL1
+LORA_FREQ_AS	LITERAL1
+LORA_FREQ_EU	LITERAL1
+LORA_FREQ_NA	LITERAL1
 
-LORA_SYNC_WORD_DEF          LITERAL1
+LORA_SYNC_WORD_DEF	LITERAL1
 
-LF_LORA_MAX_PACKET_SIZE     LITERAL1
+LF_LORA_MAX_PACKET_SIZE	LITERAL1
 
-LORA_MSG_CHECK_OK           LITERAL1
-LORA_MSG_CHECK_NOT_MASTER   LITERAL1
-LORA_MSG_CHECK_NOT_ME       LITERAL1
-LORA_MSG_CHECK_ALREADY_REC  LITERAL1
-LORA_MSG_CHECK_ERROR        LITERAL1
+LORA_MSG_CHECK_OK	LITERAL1
+LORA_MSG_CHECK_NOT_MASTER	LITERAL1
+LORA_MSG_CHECK_NOT_ME	LITERAL1
+LORA_MSG_CHECK_ALREADY_REC	LITERAL1
+LORA_MSG_CHECK_ERROR	LITERAL1
 
-LED_CICLE_TIME              LITERAL1
-LED_MIN_BRIGHTNESS          LITERAL1
+LED_CICLE_TIME	LITERAL1
+LED_MIN_BRIGHTNESS	LITERAL1
 
-BTN_DEBOUNCE_TIME           LITERAL1
-BTN_ON_TIME                 LITERAL1
-BTN_OFF_TIME                LITERAL1
-BTN_LONG_TIME               LITERAL1
+BTN_DEBOUNCE_TIME	LITERAL1
+BTN_ON_TIME	LITERAL1
+BTN_OFF_TIME	LITERAL1
+BTN_LONG_TIME	LITERAL1
